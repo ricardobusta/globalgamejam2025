@@ -56,7 +56,7 @@ public class InputController : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             scale += 1 * Time.deltaTime;
             bubble.transform.localScale = new Vector3(scale, scale, scale);
 
-            audioSource.pitch = Mathf.Pow(scale / 5f, 0.5f);
+            audioSource.pitch = (Mathf.Pow(scale / 5f, 0.5f) + 1f)/2f;
 
             if (scale > 5)
             {

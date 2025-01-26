@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace DefaultNamespace
@@ -17,6 +18,8 @@ namespace DefaultNamespace
 
         public ParticleSystem particleSystemPrefab;
 
+        private YieldInstruction delay;
+
         public static Bubble GetBubble(Bubble prefab, Vector2 position)
         {
             var bubble = bubblePool.Count == 0
@@ -33,13 +36,14 @@ namespace DefaultNamespace
         private void Awake()
         {
             released = false;
+            delay = new WaitForSeconds(particleSystemPrefab.main.duration);
         }
 
         private void Update()
         {
             if (popped)
             {
-                StartCoroutine(PopBubble());
+                PopBubble();
             }
             else if (released)
             {
@@ -52,7 +56,7 @@ namespace DefaultNamespace
             }
         }
 
-        public IEnumerator PopBubble()
+        public async void PopBubble()
         {
             gameObject.SetActive(false);
             bubblePool.Push(this);
@@ -60,9 +64,13 @@ namespace DefaultNamespace
             var particle = particlePool.Count > 0
                 ? particlePool.Pop()
                 : Instantiate(particleSystemPrefab, transform.position, Quaternion.identity);
+            particle.gameObject.SetActive(true);
+            particle.transform.localScale = transform.localScale * 0.2f;
+            particle.transform.position = transform.position;
             particle.Play();
+            particle.GetComponent<AudioSource>().Play();
 
-            yield return new WaitForSeconds(particle.main.duration);
+            await Task.Delay(Mathf.RoundToInt(particleSystemPrefab.main.duration*1000));
             
             particle.gameObject.SetActive(false);
             particlePool.Push(particle);
